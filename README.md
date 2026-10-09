@@ -74,6 +74,7 @@ the pytest suite, so `make test` stays fast. Run it with `make test-perf` or `py
   creates transfers (`POST /api/transactions`, 3x weight) and lists transactions (`GET /api/transactions/:userId`, 1x weight).
 - **Thresholds (the run fails if broken):** p95 response time under 500 ms and failure rate under 1%.
 - **Output:** `reports/performance.html` and CSV files, plus the console summary.
+- **In CI:** the GitHub Actions workflow runs it after the functional tests, and fails the build if a threshold is broken. The Locust report is uploaded with the other reports.
 - **Caveat:** the target is a single-process in-memory mock, so the numbers show the framework works,
   not how a real deployment performs. Against a real environment, I would run it from a separate machine with realistic data and thresholds.
 

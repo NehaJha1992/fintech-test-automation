@@ -19,6 +19,8 @@ jobs:
         run: playwright install --with-deps chromium
       - name: Run full suite
         run: pytest
+      - name: Run load test
+        run: python performance/run_perf.py
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v7

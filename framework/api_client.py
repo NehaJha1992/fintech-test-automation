@@ -12,7 +12,7 @@ logger = logging.getLogger("api")
 def setup_api_logging() -> None:
     """Send the 'api' logger to reports/api.log (called once per test session)."""
     REPORTS_DIR.mkdir(exist_ok=True)
-    handler = logging.FileHandler(REPORTS_DIR / "api.log", mode="w")
+    handler = logging.FileHandler(REPORTS_DIR / "api.log", mode="w", encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
     logger.handlers = [handler]
     logger.setLevel(logging.INFO)

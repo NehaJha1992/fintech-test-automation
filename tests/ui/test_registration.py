@@ -29,3 +29,19 @@ def test_registration_with_invalid_email_shows_error(registration_page):
     registration_page.register(data["name"], data["email"], data["accountType"])
 
     registration_page.expect_error("email is not a valid email address")
+
+
+@pytest.mark.negative
+def test_empty_registration_form_shows_required_error(registration_page):
+    registration_page.register(name="", email="")
+
+    registration_page.expect_error("name is required")
+
+
+@pytest.mark.negative
+def test_registration_with_existing_email_shows_error(registration_page, make_user):
+    existing_user = make_user()  # prerequisite created through the API
+
+    registration_page.register("Another Person", existing_user["email"])
+
+    registration_page.expect_error("A user with this email already exists")

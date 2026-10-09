@@ -2,6 +2,7 @@
 import base64
 import dataclasses
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -157,7 +158,8 @@ def pytest_runtest_makereport(item, call):
         screenshot_dir = REPORTS_DIR / "screenshots"
         screenshot_dir.mkdir(parents=True, exist_ok=True)
         png = page.screenshot()
-        (screenshot_dir / f"{item.name}.png").write_bytes(png)
+        safe_name = re.sub(r'[^A-Za-z0-9_.-]', "_", item.name)  # Windows forbids characters like : * ? "
+        (screenshot_dir / f"{safe_name}.png").write_bytes(png)
         report.extras = getattr(report, "extras", []) + [
             extras.png(base64.b64encode(png).decode())
         ]

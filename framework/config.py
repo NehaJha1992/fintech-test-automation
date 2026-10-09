@@ -24,7 +24,7 @@ def load_config() -> Config:
     path = PROJECT_ROOT / "config" / f"{env}.yaml"
     if not path.exists():
         raise FileNotFoundError(f"No config file for TEST_ENV='{env}': {path}")
-    data = yaml.safe_load(path.read_text())
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
 
     tokens = dict(data["tokens"])
     for role in tokens:

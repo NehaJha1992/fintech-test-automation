@@ -11,11 +11,32 @@ Stack: Python 3.11+, pytest, pytest-playwright (Chromium), requests, pydantic, F
 pytest-html + JUnit XML.
 
 ## Quick start
+Requires Python 3.11 or newer. Works on Windows, macOS and Linux.
+
+**macOS / Linux** (or Windows with `make`):
 ```bash
 make install   # creates .venv, installs pinned requirements, installs Chromium
 make test      # starts the mock app automatically, runs all tests, writes reports/
 ```
-Other targets: `make test-api`, `make test-ui`, `make test-smoke`, `make test-perf` (load test, about 30 seconds), `make report` (opens the HTML report).
+
+**Windows (PowerShell), no `make` needed:**
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+playwright install chromium
+pytest
+```
+If PowerShell blocks the activate script, run `Set-ExecutionPolicy -Scope Process RemoteSigned` first, or use `.venv\Scripts\activate.bat` in Command Prompt.
+
+**macOS / Linux without `make`:** `python3 -m venv .venv && source .venv/bin/activate`, then the same `pip install`, `playwright install chromium` and `pytest` commands.
+
+With the virtual environment active, these work on every OS:
+- `pytest -m api`, `pytest -m ui`, `pytest -m smoke`: run a subset
+- `python performance/run_perf.py`: the load test (about 30 seconds)
+- open `reports/report.html` in a browser to see the results
+
+The `make` shortcuts are `make test-api`, `make test-ui`, `make test-smoke`, `make test-perf` and `make report` (opens the HTML report).
 
 ## Project structure
 ```
@@ -29,7 +50,7 @@ framework/
   schemas.py         Pydantic models for user, transaction and error responses
   pages/             Page objects (RegistrationPage, TransactionPage), data-testid locators
 config/              local.yaml, staging.yaml
-performance/         locustfile.py (load test scenario + thresholds), run_perf.sh (starts the mock app, runs Locust)
+performance/         locustfile.py (load test scenario + thresholds), run_perf.py (starts the mock app, runs Locust; works on any OS)
 tests/
   conftest.py        Server start, per-test reset, role-based clients, data fixtures, failure screenshots
   api/               test_users.py, test_transactions.py, test_auth.py, test_notifications.py
@@ -40,15 +61,15 @@ tests/
 ## Test strategy
 - **Risk-based.** Money movement (amount validation, precision, sender/recipient checks, self-transfer)
   and authorization (401/403, no cross-user access, no creating transactions for someone else) get the deepest coverage.
-- **Test pyramid.** Most tests (54 of 58) are at the API layer, where they are fast and precise. Only
-  4 UI tests cover the critical flows: registration and transaction creation, each with a happy path and one error path.
+- **Test pyramid.** Most tests (54 of 61) are at the API layer, where they are fast and precise. Only
+  7 UI tests cover the critical flows: registration and transaction creation, each with a happy path and the main error paths (empty form, duplicate email, invalid email, negative amount, transfer to yourself).
 - **Markers:** `smoke`, `api`, `ui`, `negative`, `security` (registered in `pytest.ini`). Example: `pytest -m "api and security"`.
 - Validation cases are parametrized so each rule is one readable table of inputs.
 - Money is compared with `Decimal` built from strings, never float `==`.
 
 ## Performance testing
 A small Locust load test (`performance/locustfile.py`) exercises the transaction endpoints. It is separate from
-the pytest suite, so `make test` stays fast. Run it with `make test-perf`.
+the pytest suite, so `make test` stays fast. Run it with `make test-perf` or `python performance/run_perf.py`.
 - **Scenario:** 20 virtual users for 30 seconds. Each creates a sender and a recipient, then repeatedly
   creates transfers (`POST /api/transactions`, 3x weight) and lists transactions (`GET /api/transactions/:userId`, 1x weight).
 - **Thresholds (the run fails if broken):** p95 response time under 500 ms and failure rate under 1%.
